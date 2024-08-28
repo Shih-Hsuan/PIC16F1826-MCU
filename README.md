@@ -2,6 +2,9 @@
 ## 硬體架構圖 
 * 由海大資工 - 1121計算機系統設計課程提供
 ![image](https://github.com/user-attachments/assets/396e8a8e-9420-4455-80e9-014ec15d3e11)
+## 測試結果
+![image](https://github.com/user-attachments/assets/74a87cb4-a9ce-4aab-a5a2-8c318db69c22)
+![image](https://github.com/user-attachments/assets/436f2661-cdd3-44a5-92a6-7eb8cadac9eb)
 ## Data sheet
 [PIC16(L)F1826/27 Data Sheet](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/41391D.pdf)
 ## 支援指令
