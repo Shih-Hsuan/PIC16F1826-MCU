@@ -1,5 +1,6 @@
 # PIC16F1826 MCU二級管線架構設計與實現
-## 硬體架構圖 (由海大資工-1121計算機系統課程提供)
+## 硬體架構圖 
+* 由海大資工 - 1121計算機系統設計課程提供
 ![image](https://github.com/user-attachments/assets/396e8a8e-9420-4455-80e9-014ec15d3e11)
 ## Data sheet
 [PIC16(L)F1826/27 Data Sheet](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/41391D.pdf)
