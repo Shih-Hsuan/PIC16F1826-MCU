@@ -1,52 +1,76 @@
-# PIC16F1826 MCU二級管線架構設計與實現
-## 硬體架構圖 
-* 由海大資工 - 1121計算機系統設計課程提供
-![image](https://github.com/user-attachments/assets/396e8a8e-9420-4455-80e9-014ec15d3e11)
-## 測試結果
-![image](https://github.com/user-attachments/assets/74a87cb4-a9ce-4aab-a5a2-8c318db69c22)
-![image](https://github.com/user-attachments/assets/436f2661-cdd3-44a5-92a6-7eb8cadac9eb)
-## Data sheet
-[PIC16(L)F1826/27 Data Sheet](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/41391D.pdf)
-## 支援指令
-* Immediate Addressing
-  * MOVELW : 將立即數傳送到W
-  * ADDLW  : 立即數和W相加後傳回W
-  * SUBLW  : 立即數減去W的內容後傳回W
-  * ANDLW  : 立即數和W作邏輯與運算後傳回W
-  * IORLW  : 立即數和W作邏輯或運算後傳回W
-  * XORLW  : 立即數和W作邏輯異或運算後傳回W
-* Register Addressing
-  * ADDWF : W和F相加 0:w 1:ram
-  * ANDWF : 和F做邏輯與運算 0:w 1:ram
-  * CLRF  : 將F清零
-  * CLRW  : 將W清零
-  * COMF  : 將F反向
-  * DECF  : F遞減1
-  * GOTO  : 跳到指定的指令
-  * INCF  : F遞增1 0:w 1:ram
-  * IORWF : W和F做邏輯或運算 0:w 1:ram
-  * MOVF  : 傳送F 0:w 1:ram
-  * MOVWF : 將W的內容傳到F
-  * SUBWF : F減去W 0:w 1:ram
-  * XORWF : W和F做XOR運算 0:w 1:ram  
-  * BCF : 讓第sel_bit個bit 變成0
-  * BSF : 讓第sel_bit個bit 變成1
-* Conditional Jump
-  * BTFSC : 如果記憶體位址(f)的第某一個(b)bit為0，下一個指令不執行
-  * BTFSS : 如果記憶體位址(f)的第某一個(b)bit為1，下一個指令不執行
-  * DECFSZ = 把記憶體位址為f的值-1，如果為0下一個指令不執行
-  * INCFSZ = 把記憶體位址為f的值+1，如果為0下一個指令不執行
-* Register Addressing Rotate
-  * ASRF  : {mux1_out[7], mux1_out[7:1]}; 保留sign bit
-  * LSLF  : {mux1_out[6:0], 1'b0}; // 左移
-  * LSRF  : {1'b0, mux1_out[7:1]}; // 右移
-  * RLF   : {mux1_out[6:0], mux1_out[7]}; // 左旋轉
-  * RRF   : {mux1_out[0], mux1_out[7:1]}; // 右旋轉
-  * SWAPF : {mux1_out[3:0], mux1_out[7:4]};
-* Call and Return
-  * CALL   : Call Subroutine = push pc + goto ...
-  * RETURN : Return from Subroutine = pop
-* 相對定址
-  * BRA : 跳到指定的label
-  * BRW : 跳到指定的位址
-  * NOP : 不做事	
+<h1 align="center">PIC16F1826 MCU Core (SystemVerilog RTL)</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Language-SystemVerilog-00599C?style=for-the-badge" alt="SystemVerilog">
+  <img src="https://img.shields.io/badge/Architecture-2--Stage%20Pipeline-red?style=for-the-badge" alt="Pipeline">
+  <img src="https://img.shields.io/badge/Verification-ModelSim-yellow?style=for-the-badge" alt="ModelSim">
+</p>
+
+## Project Overview
+This repository contains the RTL (Register-Transfer Level) implementation of the **Microchip PIC16F1826** Microcontroller Core. Written entirely in SystemVerilog, this project features a custom **2-stage pipeline architecture** designed to execute the PIC16 instruction set efficiently.
+
+**Key Highlights:**
+- **Hardware Architecture**: Implemented complete CPU datapaths including ALU, Controller, Program Counter (PC), Instruction Register (IR), Memory Address Register (MAR), and a hardware Stack.
+- **2-Stage Pipelining**: Designed a Fetch-Execute pipeline to optimize instruction throughput.
+- **Hazard Resolution**: Handled control hazards during branching instructions (`CALL`, `RETURN`) by dynamically inserting `NOP` to flush the pipeline.
+
+### Hardware Architecture 
+
+The core is designed with a separate Program ROM and Data RAM datapath.
+
+![螢幕擷取畫面 2026-03-17 153134](https://hackmd.io/_uploads/Bkwo7YLqZe.png =800x)
+
+
+**Core Components:**
+- **Program ROM (11-bit Addr / 14-bit Data):** Dedicated instruction memory fetching 14-bit wide opcodes with an 11-bit address space.
+- **Data SRAM (128x8):** A single-port 128-byte RAM (`single_port_ram_128x8`) utilizing 7-bit addressing for efficient data storage and retrieval.
+- **FSM-based Controller:** Implements a Finite State Machine (FSM) to decode the 14-bit instructions and orchestrate pipeline control signals (e.g., `sel_alu`, `sel_pc`, `load_w`).
+- **ALU (Arithmetic Logic Unit):** 8-bit streamlined datapath. Designed for direct bit-manipulation and branching evaluation without relying on a dedicated Status Register.
+- **Hardware Stack (11-bit Depth):** Dedicated hardware stack supporting `push` and `pop` operations to precisely track the Program Counter (PC) during subroutine `CALL` and `RETURN` instructions.
+
+### Supported Instruction Set
+
+The CPU successfully decodes and executes a subset of the standard PIC16F1826 datasheet specifications:
+
+#### 1. Immediate Addressing
+- `MOVLW`, `ADDLW`, `SUBLW`, `ANDLW`, `IORLW`, `XORLW`
+#### 2. Register Addressing 
+- `ADDWF`, `ANDWF`, `IORWF`, `SUBWF`, `XORWF` (Supports `d=0` for W register, `d=1` for RAM)
+- `CLRF`, `CLRW`, `COMF`, `DECF`, `INCF`, `MOVF`, `MOVWF`
+- Bit-oriented: `BCF`, `BSF`
+
+#### 3. Conditional Jump & Branching 
+- `BTFSC`, `BTFSS`, `DECFSZ`, `INCFSZ`
+- `GOTO`, `CALL`, `RETURN`
+
+#### 4. Register Addressing Rotate 
+- `ASRF` (Arithmetic Right Shift, preserves sign bit)
+- `LSLF` (Logical Left Shift)
+- `LSRF` (Logical Right Shift)
+- `RLF` (Rotate Left)
+
+### RTL Verification & Pipeline Testing 
+
+The core has been rigorously verified using testbenches targeting specific pipeline behaviors and hazard conditions.
+
+#### Test Case: Control Hazard Handling (CALL / RETURN)
+
+![image](https://hackmd.io/_uploads/ry7VDFU9We.png =800x)
+
+
+**Verification Details:**
+Tested the behavior of `CALL` and `RETURN` instructions. Since these instructions cause a jump in the PC, a control hazard occurs. The logic analyzer waveform confirms that at `T6`, the next fetched instruction is correctly overridden and changed to a `NOP` (No Operation) to maintain pipeline integrity.
+
+#### Test Case 2: Comprehensive Datapath & Conditional Skip
+![image](https://hackmd.io/_uploads/r1Ng01D5-g.png =800x)
+
+
+**Verification Details:**
+This test validates the complete interaction between the ALU, Data SRAM, and the Hazard Unit:
+1. **ALU & Memory Integrity:** The waveform demonstrates accurate data transitions in the W register (`w_q`) and SRAM (`single_port_ram`) across consecutive `ADD`, `SUB`, and `MOV` instructions.
+2. **Bit Manipulation & Conditional Skips:** Successfully executed `bcf` (Bit Clear f) followed by `btfsc` (Bit Test, Skip if Clear). The pipeline correctly evaluates the bit status and flushes the subsequent instruction if the condition is met.
+3. **Dynamic Relative Branching:** Validated the `BRW` (Branch with W) instruction, proving the core can dynamically compute `PC + W` and resolve the control path seamlessly.
+
+### Repository Structure
+- `RTL/` : SystemVerilog RTL source codes (`MCU.sv`, `Program_Rom.sv`, etc.)
+- `Testbench/` : Testbench files for simulation
