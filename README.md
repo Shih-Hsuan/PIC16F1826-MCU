@@ -18,8 +18,7 @@ This repository contains the RTL (Register-Transfer Level) implementation of the
 
 The core is designed with a separate Program ROM and Data RAM datapath.
 
-![螢幕擷取畫面 2026-03-17 153134](https://hackmd.io/_uploads/Bkwo7YLqZe.png =800x)
-
+<img width="765" height="883" alt="image" src="https://github.com/user-attachments/assets/8fd469e6-49de-4440-9643-2aac614b2806" />
 
 **Core Components:**
 - **Program ROM (11-bit Addr / 14-bit Data):** Dedicated instruction memory fetching 14-bit wide opcodes with an 11-bit address space.
@@ -55,14 +54,16 @@ The core has been rigorously verified using testbenches targeting specific pipel
 
 #### Test Case: Control Hazard Handling (CALL / RETURN)
 
-![image](https://hackmd.io/_uploads/ry7VDFU9We.png =800x)
+<img width="1541" height="359" alt="image" src="https://github.com/user-attachments/assets/250b74e7-10ce-48a3-a67b-289fc5299983" />
+
 
 
 **Verification Details:**
 Tested the behavior of `CALL` and `RETURN` instructions. Since these instructions cause a jump in the PC, a control hazard occurs. The logic analyzer waveform confirms that at `T6`, the next fetched instruction is correctly overridden and changed to a `NOP` (No Operation) to maintain pipeline integrity.
 
 #### Test Case 2: Comprehensive Datapath & Conditional Skip
-![image](https://hackmd.io/_uploads/r1Ng01D5-g.png =800x)
+<img width="1060" height="430" alt="image" src="https://github.com/user-attachments/assets/d7e0cc22-43e6-445d-8c4e-305519ce3eef" />
+
 
 
 **Verification Details:**
